@@ -1,0 +1,27 @@
+# Directorios de compilación y distribución
+build/
+dist/
+bin/
+obj/
+
+# Archivos binarios de PyInstaller
+*.exe
+*.spec
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+env/
+.env/
+
+# Archivos de configuración local y logs
+*.log
+config.json
+
+# Ajustes de IDE (Visual Studio Code, PyCharm, etc.)
+.vscode/
+.idea/

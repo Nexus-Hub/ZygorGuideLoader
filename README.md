@@ -2,6 +2,10 @@
 
 **Modular Guide Loading to reduce CPU strain and eliminate loading screen lag in World of Warcraft.**
 
+<p align="center">
+  <img src="https://i.imgur.com/wMwsM5e.png" alt="ZygorGuideLoader">
+</p>
+
 By default, Zygor Guides loads every single module (Achievements, Leveling, Dungeons, Pets, etc.) into your RAM during the loading screen. For high-end setups aiming for maximum performance, this causes massive FPS drops and client freezes (up to 4+ seconds of lag).
 
 **ZygorGuideLoader** is a standalone utility that patches the `Autoload.xml` file, allowing you to load only the specific content you need for your current session.
@@ -45,5 +49,4 @@ python -m PyInstaller --noconsole --onefile --collect-all customtkinter --icon=f
 
 The executable will be generated inside the /dist/ directory.
 
-📝 Author
-Developed by cadmnexus.
+📝 **Author** Developed by **cadmnexus**. <img src="favicon.ico" width="20" height="20">
