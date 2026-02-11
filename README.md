@@ -1,4 +1,3 @@
-````markdown
 # ZygorGuideLoader 🐉
 
 **Modular Guide & Engine Optimizer to eliminate loading screen lag in World of Warcraft.**
@@ -7,6 +6,7 @@
   <img src="https://i.imgur.com/wMwsM5e.png" alt="ZygorGuideLoader">
 </p>
 
+````markdown
 By default, Zygor Guides loads every single module (Talent Advisor, Pet Battles, 3D Models, etc.) and every guide into memory during startup. For high-end setups aiming for maximum performance, this causes massive FPS drops, Lua garbage collection spikes, and client freezes.
 
 **ZygorGuideLoader** is a standalone utility that patches both `Autoload.xml` (Guides) and `files-Retail.xml` (Engine Modules), allowing you to strip the addon down to the bare essentials.
@@ -70,7 +70,3 @@ The executable will be generated inside the `/dist/` directory.
 
 📝 **Author**
 Developed by <img src="favicon.ico" width="20" height="20"> **cadmnexus**.
-
-```
-
-```
