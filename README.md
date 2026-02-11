@@ -36,24 +36,15 @@ If you want to run the source code or compile it yourself:
 
 ### Setup
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/YourUsername/ZygorGuideLoader.git](https://github.com/YourUsername/ZygorGuideLoader.git)
-   cd ZygorGuideLoader
-   Install requirements:
-   ```
+**Cloning the repository:**
+git clone [https://github.com/YourUsername/ZygorGuideLoader.git](https://github.com/YourUsername/ZygorGuideLoader.git)
+Install requirements: pip install customtkinter
+Run the script: python main.py
 
-Bash
-pip install customtkinter
-Run the script:
-
-Bash
-python main.py
 Compiling to .exe
 To build the standalone executable yourself with the embedded icon, run the following command in your terminal:
-
-Bash
 pyinstaller --noconsole --onefile --collect-all customtkinter --icon=favicon.ico main.py
+
 The executable will be generated inside the /dist/ directory.
 
 📝 Author

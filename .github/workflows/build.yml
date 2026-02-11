@@ -1,14 +1,15 @@
-name: Build ZygorGuideLoader
+name: Build and Release ZygorGuideLoader
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+    tags:
+      - "v*" # Trigger only when you push a tag starting with 'v' (e.g., v1.0)
 
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write # Crucial for creating a Release
 
     steps:
       - name: Checkout Code
@@ -28,8 +29,12 @@ jobs:
         run: |
           pyinstaller --noconsole --onefile --collect-all customtkinter --icon=favicon.ico main.py
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: Rename Executable
+        run: rename dist\main.exe ZygorGuideLoader.exe
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: ZygorGuideLoader-Exe
-          path: dist/main.exe
+          files: dist/ZygorGuideLoader.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
