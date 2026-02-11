@@ -3,7 +3,7 @@
 **Modular Guide & Engine Optimizer to eliminate loading screen lag in World of Warcraft.**
 
 <p align="center">
-  <img src="https://i.imgur.com/wMwsM5e.png" alt="ZygorGuideLoader">
+  <img src="https://i.imgur.com/j5rWJCf.png" alt="ZygorGuideLoader by Nexus">
 </p>
 
 By default, Zygor Guides loads every single module (Talent Advisor, Pet Battles, 3D Models, etc.) and every guide into memory during startup. For high-end setups aiming for maximum performance, this causes massive FPS drops, Lua garbage collection spikes, and client freezes.
@@ -73,5 +73,4 @@ The executable will be generated inside the `/dist/` directory.
 
 ---
 
-📝 **Author**
-Developed by <img src="favicon.ico" width="20" height="20"> **cadmnexus**.
+📝 Developed by <img src="favicon.ico" width="20" height="20"> **cadmnexus**.
