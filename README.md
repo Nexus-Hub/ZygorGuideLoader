@@ -1,53 +1,80 @@
+Here is the updated **README.md**, a detailed **Changelog**, and a **Commit Message** based on the final code you provided.
+
+### 📄 Updated README.md
+
+````markdown
 # ZygorGuideLoader 🐉
 
-**Modular Guide Loading to reduce CPU strain and eliminate loading screen lag in World of Warcraft.**
+**Modular Guide & Engine Optimizer to eliminate loading screen lag in World of Warcraft.**
 
 <p align="center">
   <img src="https://i.imgur.com/wMwsM5e.png" alt="ZygorGuideLoader">
 </p>
 
-By default, Zygor Guides loads every single module (Achievements, Leveling, Dungeons, Pets, etc.) into your RAM during the loading screen. For high-end setups aiming for maximum performance, this causes massive FPS drops and client freezes (up to 4+ seconds of lag).
+By default, Zygor Guides loads every single module (Talent Advisor, Pet Battles, 3D Models, etc.) and every guide into memory during startup. For high-end setups aiming for maximum performance, this causes massive FPS drops, Lua garbage collection spikes, and client freezes.
 
-**ZygorGuideLoader** is a standalone utility that patches the `Autoload.xml` file, allowing you to load only the specific content you need for your current session.
+**ZygorGuideLoader** is a standalone utility that patches both `Autoload.xml` (Guides) and `files-Retail.xml` (Engine Modules), allowing you to strip the addon down to the bare essentials.
 
 ## ✨ Features
 
-- **Faster Loading Time:** Eliminates CPU bottlenecks during loading screens.
-- **Master Faction Toggles:** New switches to instantly enable/disable **Alliance**, **Horde**, or **Neutral** guides globally.
-- **Modern GUI:** Sleek, dark-themed interface built with `customtkinter`.
-- **Persistent State:** Automatically detects your current guide status and remembers your last selection.
-- **Smart Backups:** Creates a `Autoload_Official_Backup.xml` on the first run to ensure you can always revert to the original state.
+### 🚀 Zygor Lite
+Disable  internal modules to save CPU cycles:
+- **Talent Advisor:** Disable the background talent calculation engine.
+- **Pet Battles:** Remove pet battle logic and data.
+- **World Quests:** Disable the heavy world quest tracking module.
+- **3D Model Viewer:** Remove the creature model viewer frame.
+- **Titan Panel:** Disable the overlay integration.
 
-## 🚀 How to Use (For Standard Users)
+### 📂 Guide Manager
+- **Master Faction Toggles:** Instantly enable/disable **Alliance** or **Horde** guides globally.
+- **Category Filtering:** Manually toggle off specific guide categories (e.g., disable *Leveling* or *Dailies* if you don't use them).
+
+### 🛠️ Utilities
+- **Cache Cleaner:** One-click button to safely delete the WoW `_retail_/Cache` folder to fix stale data issues.
+- **Smart Backups:** Automatically creates `_Official_Backup.xml` files on the first run.
+- **Restore Original:** Factory reset button to revert all changes and restore the addon to its original state.
+- **Modern GUI:** Sleek, dark-themed interface built with `customtkinter`.
+
+## 🚀 How to Use
 
 1. Download the latest `ZygorGuideLoader.exe` from the [Releases](../../releases) tab.
 2. Run the executable.
-3. Click **"Select World of Warcraft Folder"** (the app will attempt to auto-detect your path via the Windows Registry).
-4. Use the **Master Toggles** at the top to filter by Faction.
-5. Manually toggle off specific categories (e.g., disable _PetsMounts_ or _Achievements_ to save memory).
+3. Click **"Select World of Warcraft Folder"** (the app will attempt to auto-detect your path via Windows Registry).
+4. **Lite Settings:** Toggle OFF features you don't use (e.g., Pet Battles, Talent Advisor) to disable them in the engine.
+5. **Guide Settings:** Use the Faction switches or the list below to select which guides to load.
 6. Click **"Patch & Ready!"**.
-7. Experience faster loading times.
+7. Launch World of Warcraft.
 
 ## 💻 Development & Compilation
 
 If you want to run the source code or compile it yourself:
 
 ### Prerequisites
-
 - **Python 3.10+**
 - `customtkinter` library
 
-### Cloning the repository:\*\*
+### Installation
+```bash
+git clone https://github.com/Nexus-Hub/ZygorGuideLoader.git
+pip install customtkinter
+python main.py
+````
 
-git clone [https://github.com/Nexus-Hub/ZygorGuideLoader.git](https://github.com/Nexus-Hub/ZygorGuideLoader.git)
-Install requirements: pip install customtkinter
-Run the script: python main.py
+### Compiling to .exe
 
-Compiling to .exe
-To build the standalone executable yourself with the embedded icon, run the following command in your terminal:
+To build the standalone executable with the embedded icon:
+
+```bash
 python -m PyInstaller --noconsole --onefile --collect-all customtkinter --icon=favicon.ico --add-data "favicon.ico;." main.py
+```
 
-The executable will be generated inside the /dist/ directory.
+The executable will be generated inside the `/dist/` directory.
+
+---
 
 📝 **Author**
 Developed by <img src="favicon.ico" width="20" height="20"> **cadmnexus**.
+
+```
+
+```

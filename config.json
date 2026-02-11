@@ -1,1 +1,1 @@
-{"zygor_path": "D:/Games/World of Warcraft\\_retail_\\Interface\\AddOns\\ZygorGuidesViewer\\Guides-Retail", "faction_neutral": false, "faction_alliance": false, "faction_horde": true}
+{"zygor_path": "D:/Games/World of Warcraft\\_retail_\\Interface\\AddOns\\ZygorGuidesViewer\\Guides-Retail", "faction_alliance": true, "faction_horde": true, "lite_settings": {"Talent Advisor": true, "Pet Battles": true, "World Quests": true, "Creature 3D Model Viewer": true, "Titan Panel Overlay": true}}

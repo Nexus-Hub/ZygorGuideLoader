@@ -6,12 +6,31 @@ import winreg
 import sys
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+import ctypes
+
+# Set the App User Model ID so the taskbar icon displays correctly
+myappid = "nexus.zygorloader.app.2.0"  # Arbitrary string
+try:
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except Exception:
+    pass
 
 # Set up the modern dark theme
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
 CONFIG_FILE = "config.json"
+
+LITE_FEATURES = {
+    "Talent Advisor": [
+        "Code-Retail\\TalentAdvisor.lua",
+        "Code-Retail\\TalentAdvisor-Data.lua",
+    ],
+    "Pet Battles": ["Code-Retail\\PetBattle.lua", "PetBattle.lua"],
+    "World Quests": ["Code-Retail\\WorldQuests.lua", "WorldQuests.lua"],
+    "Creature 3D Model Viewer": ["CreatureViewer.lua"],
+    "Titan Panel Overlay": ["TitanZygor.xml"],
+}
 
 
 def resource_path(relative_path):
@@ -27,20 +46,26 @@ class ZygorLoaderApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("ZygorGuideLoader by Nexus")
-        self.geometry("500x750")
+        self.geometry("520x760")
         self.resizable(False, False)
 
-        if os.path.exists("favicon.ico"):
+        # Use resource_path to check for the icon inside the exe bundle
+        icon_path = resource_path("favicon.ico")
+        if os.path.exists(icon_path):
             try:
-                self.iconbitmap(resource_path("favicon.ico"))
-            except:
-                pass
+                self.iconbitmap(icon_path)
+            except Exception as e:
+                print(f"Icon load error: {e}")
 
         self.zygor_path = ""
         self.official_xml = ""
         self.target_xml = ""
         self.categories = set()
         self.toggles = {}
+        self.main_addon_path = ""
+        self.target_files_xml = ""
+        self.official_files_xml = ""
+        self.lite_toggles = {}
 
         # --- UI LAYOUT ---
         self.lbl_title = ctk.CTkLabel(
@@ -58,24 +83,49 @@ class ZygorLoaderApp(ctk.CTk):
         )
         self.lbl_path.pack(pady=5)
 
+        # --- CONTAINER FOR MAIN UI (Hidden by default) ---
+        self.main_ui = ctk.CTkFrame(self, fg_color="transparent")
+        # Note: We do NOT pack self.main_ui here. It gets packed in setup_files()
+
+        # --- ZYGOR LITE SETTINGS ---
+        ctk.CTkLabel(
+            self.main_ui,
+            text="--- ZYGOR LITE SETTINGS ---",
+            font=("Arial", 12, "bold"),
+            text_color="#28a745",
+        ).pack(pady=(10, 0))
+
+        # Outer transparent frame filling the width
+        self.frame_lite = ctk.CTkFrame(self.main_ui, width=420, fg_color="transparent")
+        self.frame_lite.pack(pady=5, padx=20, fill="x")
+
+        # Inner frame to keep the 2-column grid perfectly centered
+        self.inner_lite = ctk.CTkFrame(self.frame_lite, fg_color="transparent")
+        self.inner_lite.pack(anchor="center")
+
+        for i, feature in enumerate(LITE_FEATURES.keys()):
+            var = ctk.BooleanVar(value=True)
+            sw = ctk.CTkSwitch(
+                self.inner_lite, text=feature, variable=var, font=("Arial", 13)
+            )
+            sw.grid(row=i // 2, column=i % 2, padx=20, pady=8, sticky="w")
+            self.lite_toggles[feature] = var
+
+        # --- ZYGOR LITE SETTINGS ---
+        ctk.CTkLabel(
+            self.main_ui,
+            text="--- ZYGOR GUIDE LOADER SETTINGS ---",
+            font=("Arial", 12, "bold"),
+            text_color="#28a745",
+        ).pack(pady=(10, 0))
+
         # --- MASTER FACTION TOGGLES ---
-        self.frame_factions = ctk.CTkFrame(self, fg_color="transparent")
+        self.frame_factions = ctk.CTkFrame(self.main_ui, fg_color="transparent")
         self.frame_factions.pack(pady=5)
 
         # Variables for Master Toggles (Default True)
-        self.var_neutral = ctk.BooleanVar(value=True)
         self.var_alliance = ctk.BooleanVar(value=True)
         self.var_horde = ctk.BooleanVar(value=True)
-
-        # Neutral Switch (Yellow/Orange)
-        self.sw_neutral = ctk.CTkSwitch(
-            self.frame_factions,
-            text="Neutral",
-            variable=self.var_neutral,
-            progress_color="#e0a800",
-            font=("Arial", 12, "bold"),
-        )
-        self.sw_neutral.pack(side="left", padx=10)
 
         # Alliance Switch (Blue)
         self.sw_alliance = ctk.CTkSwitch(
@@ -98,23 +148,111 @@ class ZygorLoaderApp(ctk.CTk):
         self.sw_horde.pack(side="left", padx=10)
 
         # --- SCROLLABLE CATEGORY LIST ---
-        self.scrollable_frame = ctk.CTkScrollableFrame(self, width=420, height=350)
-        self.scrollable_frame.pack(pady=15, padx=20, fill="both", expand=True)
+        self.scrollable_frame = ctk.CTkFrame(
+            self.main_ui, width=420, fg_color="transparent"
+        )
+        self.scrollable_frame.pack(pady=0, padx=20, fill="x")
+
+        # --- CENTERED TOGGLE ALL BUTTONS ---
+        self.frame_toggle_container = ctk.CTkFrame(self.main_ui, fg_color="transparent")
+        self.frame_toggle_container.pack(pady=10, fill="x")
+
+        # This inner frame acts as a centered anchor
+        self.inner_toggle_btns = ctk.CTkFrame(
+            self.frame_toggle_container, fg_color="transparent"
+        )
+        self.inner_toggle_btns.pack(anchor="center")  # This is what centers the block
+
+        self.btn_all_on = ctk.CTkButton(
+            self.inner_toggle_btns,
+            text="Toggle All Guides ON",
+            width=120,
+            height=28,
+            command=lambda: self.toggle_all_categories(True),
+            fg_color="#3b3b3b",
+            hover_color="#4b4b4b",
+            font=("Arial", 12, "bold"),
+        )
+        self.btn_all_on.pack(side="left", padx=10)
+
+        self.btn_all_off = ctk.CTkButton(
+            self.inner_toggle_btns,
+            text="Toggle All Guides OFF",
+            width=120,
+            height=28,
+            command=lambda: self.toggle_all_categories(False),
+            fg_color="#3b3b3b",
+            hover_color="#4b4b4b",
+            font=("Arial", 12, "bold"),
+        )
+        self.btn_all_off.pack(side="left", padx=10)
+
+        # Helper text
+        ctk.CTkLabel(
+            self.main_ui,
+            text="(Toggling OFF disables what's selected in-game)",
+            font=("Arial", 10, "italic"),
+            text_color="gray",
+        ).pack(pady=(0, 5))
+
+        # --- ZYGOR LITE SETTINGS ---
+        ctk.CTkLabel(
+            self.main_ui,
+            text="Made by cadmnexus",
+            font=("Arial", 12, "bold"),
+            text_color="#28a745",
+        ).pack(pady=(10, 0))
+
+        # --- ACTION BUTTONS FRAME ---
+        self.frame_actions = ctk.CTkFrame(self.main_ui, fg_color="transparent")
+        self.frame_actions.pack(pady=(5, 10))
 
         self.btn_patch = ctk.CTkButton(
-            self,
+            self.frame_actions,
             text="Patch & Ready!",
             command=self.patch_xml,
             fg_color="#28a745",
             hover_color="#218838",
             font=("Arial", 16, "bold"),
+            width=200,
             height=40,
         )
-        self.btn_patch.pack(pady=15)
+        self.btn_patch.pack(side="left", padx=10)
+
+        self.btn_restore = ctk.CTkButton(
+            self.frame_actions,
+            text="Restore Original",
+            command=self.restore_official_backups,
+            fg_color="#6c757d",
+            hover_color="#5a6268",
+            font=("Arial", 14, "bold"),
+            width=150,
+            height=40,
+        )
+        self.btn_restore.pack(side="left", padx=10)
+
+        self.btn_cache = ctk.CTkButton(
+            self.main_ui,
+            text="Clear WoW Cache",
+            command=self.clear_wow_cache,
+            fg_color="#d9534f",
+            hover_color="#c9302c",
+            font=("Arial", 14, "bold"),
+            height=35,
+        )
+        self.btn_cache.pack(pady=(0, 15))
 
         # Initialization
         self.auto_detect_wow()
         self.load_config()
+
+        # If no path found after init, prompt user
+        if not self.zygor_path:
+            self.lbl_path.configure(
+                text="Please select your World of Warcraft folder to continue."
+            )
+            # Use .after to ensure window is ready before opening dialog
+            self.after(200, self.browse_folder)
 
     def get_faction(self, filename):
         """Helper to determine faction based on filename string"""
@@ -170,21 +308,28 @@ class ZygorLoaderApp(ctk.CTk):
                         self.setup_files()
 
                     # 2. Load Faction Toggles (Default to True if not in file)
-                    self.var_neutral.set(data.get("faction_neutral", True))
                     self.var_alliance.set(data.get("faction_alliance", True))
                     self.var_horde.set(data.get("faction_horde", True))
+
+                    # 3. Load Lite Features (Default to True/Enabled if not in file)
+                    saved_lite = data.get("lite_settings", {})
+                    for feat, var in self.lite_toggles.items():
+                        var.set(saved_lite.get(feat, True))
 
             except Exception as e:
                 print(f"Config load error: {e}")
 
     def save_config(self):
-        """Saves path and faction toggle states to config.json"""
+        """Saves path, faction, and lite toggle states to config.json"""
         try:
             data = {
                 "zygor_path": self.zygor_path,
-                "faction_neutral": self.var_neutral.get(),
                 "faction_alliance": self.var_alliance.get(),
                 "faction_horde": self.var_horde.get(),
+                # Extract the boolean value from each ctk.BooleanVar in the dictionary
+                "lite_settings": {
+                    feat: var.get() for feat, var in self.lite_toggles.items()
+                },
             }
             with open(CONFIG_FILE, "w") as f:
                 json.dump(data, f)
@@ -215,18 +360,43 @@ class ZygorLoaderApp(ctk.CTk):
             self.setup_files()
 
     def setup_files(self):
+        self.main_ui.pack(fill="both", expand=True)
         self.lbl_path.configure(text=f"Path: ...{self.zygor_path[-45:]}")
+        self.main_addon_path = os.path.dirname(
+            self.zygor_path
+        )  # Gets the ZygorGuidesViewer root folder
+
+        # Guide XMLs
         self.target_xml = os.path.join(self.zygor_path, "Autoload.xml")
         self.official_xml = os.path.join(
             self.zygor_path, "Autoload_Official_Backup.xml"
         )
 
+        # Engine XMLs
+        self.target_files_xml = os.path.join(self.main_addon_path, "files-Retail.xml")
+        self.official_files_xml = os.path.join(
+            self.main_addon_path, "files-Retail_Official_Backup.xml"
+        )
+
+        # 1. Backup Autoload
         if not os.path.exists(self.official_xml):
             try:
                 shutil.copy2(self.target_xml, self.official_xml)
             except Exception as e:
                 messagebox.showerror(
-                    "Backup Error", f"Failed to create master backup: {e}"
+                    "Backup Error", f"Failed to create guide backup: {e}"
+                )
+                return
+
+        # 2. Backup files-Retail
+        if not os.path.exists(self.official_files_xml) and os.path.exists(
+            self.target_files_xml
+        ):
+            try:
+                shutil.copy2(self.target_files_xml, self.official_files_xml)
+            except Exception as e:
+                messagebox.showerror(
+                    "Backup Error", f"Failed to create engine backup: {e}"
                 )
                 return
 
@@ -248,7 +418,11 @@ class ZygorLoaderApp(ctk.CTk):
                         )
                         if match:
                             folder = match.group(1).replace("/", "\\").split("\\")[0]
-                            if folder.lower() in ["images", "includes"]:
+                            # Exclude core folders and loose files (like TalentAdvisor-Builds.lua)
+                            if folder.lower() in [
+                                "images",
+                                "includes",
+                            ] or folder.lower().endswith((".lua", ".xml")):
                                 continue
 
                             if folder not in folder_states:
@@ -268,7 +442,11 @@ class ZygorLoaderApp(ctk.CTk):
                     )
                     if match:
                         folder = match.group(1).replace("/", "\\").split("\\")[0]
-                        if folder.lower() not in ["images", "includes"]:
+                        # Exclude core folders and loose files
+                        if folder.lower() not in [
+                            "images",
+                            "includes",
+                        ] and not folder.lower().endswith((".lua", ".xml")):
                             self.categories.add(folder)
 
             self.toggles.clear()
@@ -286,9 +464,8 @@ class ZygorLoaderApp(ctk.CTk):
                 switch.pack(pady=8, padx=20, anchor="w")
                 self.toggles[cat] = var
 
-            calc_height = 350 + (len(sorted_cats) * 45)
-            final_height = max(600, min(900, calc_height))
-            self.geometry(f"500x{final_height}")
+            calc_height = 680 + (len(sorted_cats) * 45)
+            self.geometry(f"520x{min(1100, calc_height)}")
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load categories: {e}")
@@ -335,8 +512,6 @@ class ZygorLoaderApp(ctk.CTk):
                     is_faction_enabled = self.var_alliance.get()
                 elif faction == "Horde":
                     is_faction_enabled = self.var_horde.get()
-                elif faction == "Neutral":
-                    is_faction_enabled = self.var_neutral.get()
 
                 # 3. Combine Logic: BOTH must be true to active
                 should_be_active = is_folder_enabled and is_faction_enabled
@@ -360,9 +535,183 @@ class ZygorLoaderApp(ctk.CTk):
         try:
             with open(self.target_xml, "w", encoding="utf-8") as f:
                 f.writelines(new_lines)
-            messagebox.showinfo("Success", "Loading guides optimized!")
+
+            # --- START FILES-RETAIL PATCHING ---
+            if os.path.exists(self.official_files_xml):
+                with open(self.official_files_xml, "r", encoding="utf-8") as f:
+                    engine_lines = f.readlines()
+
+                disabled_files = []
+                for feat, var in self.lite_toggles.items():
+                    if not var.get():
+                        disabled_files.extend(LITE_FEATURES[feat])
+
+                new_engine_lines = []
+                seen_files = set()
+
+                # Enhanced Protection to stabilize Gear, Gold, and Rare modules
+                PROTECTED_CORE = [
+                    "ZygorGuidesViewer.lua",
+                    "MasterFrame.xml",
+                    "Skins",
+                    "Templates.xml",
+                    "Functions.lua",
+                    "Class.lua",
+                    "Ver.lua",
+                    "Localization",
+                    "UiWidgets",
+                    "MaintenanceFrame.xml",
+                    "Options.lua",
+                    "Pointer.lua",
+                    "Arrows",
+                    "Framework",
+                    "Lib",
+                    "GuideMenu.lua",
+                    "Expect.lua",
+                    "Notification",
+                    "Item-Utils",
+                    "QuestTracking",
+                    "GoldUI\\Gold.xml",
+                    "Events",
+                    "Parser",
+                ]
+
+                for line in engine_lines:
+                    line_raw = line.strip()
+                    if not line_raw:
+                        new_engine_lines.append(line)
+                        continue
+
+                    match = re.search(
+                        r'file=[\'"]([^\'"]+)[\'"]', line_raw, re.IGNORECASE
+                    )
+                    should_comment = False
+
+                    if match:
+                        current_file = match.group(1).replace("/", "\\").lower()
+                        is_protected = any(
+                            p.lower() in current_file for p in PROTECTED_CORE
+                        )
+                        is_bloat = any(
+                            d.lower() in current_file for d in disabled_files
+                        )
+
+                        if is_protected:
+                            should_comment = False
+                        elif is_bloat:
+                            should_comment = True
+
+                        if not should_comment:
+                            if current_file in seen_files:
+                                should_comment = True
+                            else:
+                                seen_files.add(current_file)
+
+                    # 3. FINAL ASSEMBLY: Pure XML Logic
+                    if should_comment:
+                        # If it needs to be disabled but isn't already commented
+                        if not line_raw.startswith("<!--"):
+                            new_engine_lines.append(f"\t<!-- {line_raw} -->\n")
+                        else:
+                            new_engine_lines.append(line)
+                    else:
+                        # If it should be enabled but is currently commented
+                        if line_raw.startswith("<!--"):
+                            # Remove XML comment tags to restore the line
+                            # Regex removes '<!--' at start, '-->' at end, and surrounding whitespace
+                            clean = re.sub(r"^<!--\s*|\s*-->$", "", line_raw)
+                            new_engine_lines.append(f"\t{clean}\n")
+                        else:
+                            new_engine_lines.append(line)
+
+                with open(self.target_files_xml, "w", encoding="utf-8") as f:
+                    f.writelines(new_engine_lines)
+            # --- END FILES-RETAIL PATCHING ---
+
+            messagebox.showinfo(
+                "Success", "Guides & Engine Optimized! ZygorLite applied."
+            )
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save file: {e}")
+
+    def clear_wow_cache(self):
+        """Finds the WoW _retail_ folder and deletes the Cache directory."""
+        if not self.zygor_path:
+            messagebox.showerror(
+                "Error", "Please detect or select your WoW folder first."
+            )
+            return
+
+        try:
+            # We know zygor_path contains "_retail_". Let's split the string to get the root _retail_ path.
+            # Example path: C:\Program Files (x86)\World of Warcraft\_retail_\Interface\AddOns\ZygorGuidesViewer\Guides-Retail
+            if "_retail_" in self.zygor_path:
+                retail_path = self.zygor_path.split("_retail_")[0] + "_retail_"
+                cache_path = os.path.join(retail_path, "Cache")
+
+                if os.path.exists(cache_path):
+                    try:
+                        shutil.rmtree(cache_path)
+                        messagebox.showinfo(
+                            "Success",
+                            "WoW Cache successfully cleared!\nYour next login will rebuild it cleanly.",
+                        )
+                    except OSError as e:
+                        # Catch WinError 32 specifically when a file is locked by the game
+                        if e.winerror == 32 or "used by another process" in str(e):
+                            messagebox.showwarning(
+                                "Game is Running",
+                                "World of Warcraft is currently running!\n\nPlease close the game completely before clearing the cache.",
+                            )
+                        else:
+                            raise e
+                else:
+                    messagebox.showinfo(
+                        "Info", "Cache folder is already empty or does not exist."
+                    )
+            else:
+                messagebox.showerror(
+                    "Error", "Could not locate the _retail_ directory in the path."
+                )
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to clear cache: {e}")
+
+    def toggle_all_categories(self, state):
+        """Sets all category toggles in the scrollable frame to True or False."""
+        for var in self.toggles.values():
+            var.set(state)
+
+    def restore_official_backups(self):
+        """Full factory reset of all modified Zygor files."""
+        if not all(
+            os.path.exists(f) for f in [self.official_xml, self.official_files_xml]
+        ):
+            messagebox.showerror(
+                "Error", "Backups missing. Re-select your WoW folder to recreate them."
+            )
+            return
+
+        if messagebox.askyesno(
+            "Zygor Reset",
+            "Restore Zygor to official version? (This removes all Lite optimizations)",
+        ):
+            try:
+                # Direct overwrite from clean backups
+                shutil.copy2(self.official_xml, self.target_xml)
+                shutil.copy2(self.official_files_xml, self.target_files_xml)
+
+                # Reset UI state
+                self.var_alliance.set(True)
+                self.var_horde.set(True)
+                for var in self.lite_toggles.values():
+                    var.set(True)
+
+                self.load_categories()
+                self.save_config()
+                messagebox.showinfo("Success", "Zygor restored to original state.")
+            except Exception as e:
+                messagebox.showerror("Error", f"Restore failed: {e}")
 
 
 if __name__ == "__main__":
