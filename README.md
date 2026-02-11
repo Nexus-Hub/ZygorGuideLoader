@@ -6,7 +6,6 @@
   <img src="https://i.imgur.com/wMwsM5e.png" alt="ZygorGuideLoader">
 </p>
 
-````markdown
 By default, Zygor Guides loads every single module (Talent Advisor, Pet Battles, 3D Models, etc.) and every guide into memory during startup. For high-end setups aiming for maximum performance, this causes massive FPS drops, Lua garbage collection spikes, and client freezes.
 
 **ZygorGuideLoader** is a standalone utility that patches both `Autoload.xml` (Guides) and `files-Retail.xml` (Engine Modules), allowing you to strip the addon down to the bare essentials.
@@ -14,7 +13,9 @@ By default, Zygor Guides loads every single module (Talent Advisor, Pet Battles,
 ## ✨ Features
 
 ### 🚀 Zygor Lite
-Disable  internal modules to save CPU cycles:
+
+Disable internal modules to save CPU cycles:
+
 - **Talent Advisor:** Disable the background talent calculation engine.
 - **Pet Battles:** Remove pet battle logic and data.
 - **World Quests:** Disable the heavy world quest tracking module.
@@ -22,10 +23,12 @@ Disable  internal modules to save CPU cycles:
 - **Titan Panel:** Disable the overlay integration.
 
 ### 📂 Guide Manager
+
 - **Master Faction Toggles:** Instantly enable/disable **Alliance** or **Horde** guides globally.
-- **Category Filtering:** Manually toggle off specific guide categories (e.g., disable *Leveling* or *Dailies* if you don't use them).
+- **Category Filtering:** Manually toggle off specific guide categories (e.g., disable _Leveling_ or _Dailies_ if you don't use them).
 
 ### 🛠️ Utilities
+
 - **Cache Cleaner:** One-click button to safely delete the WoW `_retail_/Cache` folder to fix stale data issues.
 - **Smart Backups:** Automatically creates `_Official_Backup.xml` files on the first run.
 - **Restore Original:** Factory reset button to revert all changes and restore the addon to its original state.
@@ -46,15 +49,17 @@ Disable  internal modules to save CPU cycles:
 If you want to run the source code or compile it yourself:
 
 ### Prerequisites
+
 - **Python 3.10+**
 - `customtkinter` library
 
 ### Installation
+
 ```bash
 git clone https://github.com/Nexus-Hub/ZygorGuideLoader.git
 pip install customtkinter
 python main.py
-````
+```
 
 ### Compiling to .exe
 
