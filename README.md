@@ -1,5 +1,3 @@
-Here is the updated **README.md**, a detailed **Changelog**, and a **Commit Message** based on the final code you provided.
-
 ### 📄 Updated README.md
 
 ````markdown
