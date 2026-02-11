@@ -49,4 +49,5 @@ python -m PyInstaller --noconsole --onefile --collect-all customtkinter --icon=f
 
 The executable will be generated inside the /dist/ directory.
 
-📝 **Author** Developed by **cadmnexus**. <img src="favicon.ico" width="20" height="20">
+📝 **Author**
+Developed by <img src="favicon.ico" width="20" height="20"> **cadmnexus**.
