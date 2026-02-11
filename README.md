@@ -8,17 +8,16 @@ By default, Zygor Guides loads every single module (Achievements, Leveling, Dung
 
 ## ✨ Features
 
-- **Faster loading time:** Eliminates UI bottlenecking during loading.
+- **Faster Loading Time:** Eliminates CPU bottlenecks during loading screens.
 - **Master Faction Toggles:** New switches to instantly enable/disable **Alliance**, **Horde**, or **Neutral** guides globally.
 - **Modern GUI:** Sleek, dark-themed interface built with `customtkinter`.
 - **Persistent State:** Automatically detects your current guide status and remembers your last selection.
 - **Smart Backups:** Creates a `Autoload_Official_Backup.xml` on the first run to ensure you can always revert to the original state.
-- **Dynamic Interface:** The application window automatically resizes based on the number of guide categories detected.
 
 ## 🚀 How to Use (For Standard Users)
 
 1. Download the latest `ZygorGuideLoader.exe` from the [Releases](../../releases) tab.
-2. Run the executable
+2. Run the executable.
 3. Click **"Select World of Warcraft Folder"** (the app will attempt to auto-detect your path via the Windows Registry).
 4. Use the **Master Toggles** at the top to filter by Faction.
 5. Manually toggle off specific categories (e.g., disable _PetsMounts_ or _Achievements_ to save memory).
@@ -34,16 +33,15 @@ If you want to run the source code or compile it yourself:
 - **Python 3.10+**
 - `customtkinter` library
 
-### Setup
+### Cloning the repository:\*\*
 
-**Cloning the repository:**
-git clone [https://github.com/YourUsername/ZygorGuideLoader.git](https://github.com/YourUsername/ZygorGuideLoader.git)
+git clone [https://github.com/Nexus-Hub/ZygorGuideLoader.git](https://github.com/Nexus-Hub/ZygorGuideLoader.git)
 Install requirements: pip install customtkinter
 Run the script: python main.py
 
 Compiling to .exe
 To build the standalone executable yourself with the embedded icon, run the following command in your terminal:
-pyinstaller --noconsole --onefile --collect-all customtkinter --icon=favicon.ico main.py
+python -m PyInstaller --noconsole --onefile --collect-all customtkinter --icon=favicon.ico --add-data "favicon.ico;." main.py
 
 The executable will be generated inside the /dist/ directory.
 
