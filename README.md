@@ -44,6 +44,14 @@ Disable internal modules to save CPU cycles:
 6. Click **"Patch & Ready!"**.
 7. Launch World of Warcraft.
 
+## ⚠️ Known Limitations & Disclaimer
+
+- **Search & Featured Page:** Disabling guide categories will prevent the in-game Search and Featured page from finding content within those toggled-off guides.
+
+- **Manual Control:** This loader acts as a manual workaround for performance optimization. Until Zygor implements native on-demand guide loading or lazy loading for their internal modules, these functional trade-offs are necessary to reduce startup times and memory bloat.
+
+## It is recommended to only leave the guides you are currently using enabled (e.g., "Leveling") to maintain a balance between functionality and performance.
+
 ## 💻 Development & Compilation
 
 If you want to run the source code or compile it yourself:
