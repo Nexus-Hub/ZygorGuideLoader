@@ -11,11 +11,20 @@ By default, Zygor Guides loads every every guide into memory during startup. Thi
   <img src="https://i.imgur.com/qIFmGZE.png" alt="ZygorGuideLoader by Nexus">
 </p>
 
+**ZygorGuideLoader** is a standalone utility that comments guides on `Autoload.xml`
 <p align="center">
   <img src="https://i.imgur.com/yqoy3xt.png" alt="ZygorGuideLoader by Nexus">
 </p>
 
-**ZygorGuideLoader** is a standalone utility that comments guides on `Autoload.xml`
+**In-Game** Midnight only enabled.
+<p align="center">
+  <img src="https://i.imgur.com/zNuatVP.png" alt="ZygorGuideLoader by Nexus">
+</p>
+
+**In-Game** Midnight only enabled. TWW and others expansions disabled (Not loaded).
+<p align="center">
+  <img src="https://i.imgur.com/EuTqT3E.png" alt="ZygorGuideLoader by Nexus">
+</p>
 
 ## ✨ Features
 
