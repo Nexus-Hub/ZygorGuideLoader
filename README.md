@@ -1,36 +1,33 @@
 # ZygorGuideLoader 🐉
 
-**Modular Guide & Engine Optimizer to eliminate loading screen lag in World of Warcraft.**
+**Modular Optimizer to eliminate loading screen lag in World of Warcraft when using Zygor.**
+By default, Zygor Guides loads every every guide into memory during startup. This causes FPS drops and client freezes during load.
 
 <p align="center">
-  <img src="https://i.imgur.com/j5rWJCf.png" alt="ZygorGuideLoader by Nexus">
+  <img src="https://i.imgur.com/nZxY3dS.png" alt="ZygorGuideLoader by Nexus">
 </p>
 
-By default, Zygor Guides loads every single module (Talent Advisor, Pet Battles, 3D Models, etc.) and every guide into memory during startup. For high-end setups aiming for maximum performance, this causes massive FPS drops, Lua garbage collection spikes, and client freezes.
+<p align="center">
+  <img src="https://i.imgur.com/qIFmGZE.png" alt="ZygorGuideLoader by Nexus">
+</p>
 
-**ZygorGuideLoader** is a standalone utility that patches both `Autoload.xml` (Guides) and `files-Retail.xml` (Engine Modules), allowing you to strip the addon down to the bare essentials.
+<p align="center">
+  <img src="https://i.imgur.com/yqoy3xt.png" alt="ZygorGuideLoader by Nexus">
+</p>
+
+**ZygorGuideLoader** is a standalone utility that comments guides on `Autoload.xml`
 
 ## ✨ Features
 
-### 🚀 Zygor Lite
-
-Disable internal modules to save CPU cycles:
-
-- **Talent Advisor:** Disable the background talent calculation engine.
-- **Pet Battles:** Remove pet battle logic and data.
-- **World Quests:** Disable the heavy world quest tracking module.
-- **3D Model Viewer:** Remove the creature model viewer frame.
-- **Titan Panel:** Disable the overlay integration.
-
 ### 📂 Guide Manager
-
-- **Master Faction Toggles:** Instantly enable/disable **Alliance** or **Horde** guides globally.
-- **Category Filtering:** Manually toggle off specific guide categories (e.g., disable _Leveling_ or _Dailies_ if you don't use them).
+Comments guides preventing them from loading to save CPU cycles during character load or /reload:
+- **Expansion Toggles:** Instantly enable/disable expansions like **TWW** or **DRAGONFLIGHT** guides.
+- **Category Filtering:** Toggle off specific guide categories (e.g., disable _Leveling_ or _Dailies_ if you don't use them).
 
 ### 🛠️ Utilities
 
 - **Cache Cleaner:** One-click button to safely delete the WoW `_retail_/Cache` folder to fix stale data issues.
-- **Smart Backups:** Automatically creates `_Official_Backup.xml` files on the first run.
+- **Smart Backups:** Automatically creates `_Official_Backup.xml` file on the first run.
 - **Restore Original:** Factory reset button to revert all changes and restore the addon to its original state.
 - **Modern GUI:** Sleek, dark-themed interface built with `customtkinter`.
 
@@ -39,14 +36,13 @@ Disable internal modules to save CPU cycles:
 1. Download the latest `ZygorGuideLoader.exe` from the [Releases](../../releases) tab.
 2. Run the executable.
 3. Click **"Select World of Warcraft Folder"** (the app will attempt to auto-detect your path via Windows Registry).
-4. **Lite Settings:** Toggle OFF features you don't use (e.g., Pet Battles, Talent Advisor) to disable them in the engine.
-5. **Guide Settings:** Use the Faction switches or the list below to select which guides to load.
-6. Click **"Patch & Ready!"**.
-7. Launch World of Warcraft.
+4. Toggle OFF guides you don't use (e.g., Titles) to disable them in the engine.
+5. Click **"Patch & Ready!"**.
+6. Launch World of Warcraft.
 
 ## ⚠️ Known Limitations & Disclaimer
 
-- **Search & Featured Page:** Disabling guide categories will prevent the in-game Search and Featured page from finding content within those toggled-off guides.
+- **Search & Featured Page:** Disabling guide categories will prevent the in-game Search and will be shown as not available in-game.
 
 - **Manual Control:** This loader acts as a manual workaround for performance optimization. Until Zygor implements native on-demand guide loading or lazy loading for their internal modules, these functional trade-offs are necessary to reduce startup times and memory bloat.
 
