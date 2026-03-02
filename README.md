@@ -49,10 +49,9 @@ Comments guides preventing them from loading to save CPU cycles during character
 5. Click **"Patch & Ready!"**.
 6. Launch World of Warcraft.
 
-## ⚠️ Known Limitations & Disclaimer
+# ⚠️ Known Limitations & Disclaimer
 
-- **Search & Featured Page:** Disabling guide categories will prevent the in-game Search and will be shown as not available in-game.
-
+- **Search & Featured Page:** Disabling guides will prevent them from showing up at the in-game search and will be shown as "missing".
 - **Manual Control:** This loader acts as a manual workaround for performance optimization. Until Zygor implements native on-demand guide loading or lazy loading for their internal modules, these functional trade-offs are necessary to reduce startup times and memory bloat.
 
 ## It is recommended to only leave the guides you are currently using enabled (e.g., "Leveling") to maintain a balance between functionality and performance.
