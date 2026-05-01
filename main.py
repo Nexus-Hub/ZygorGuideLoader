@@ -48,7 +48,16 @@ EXPANSIONS = {
     "SHADOWLANDS": ["SHADOW"],
     "DRAGONFLIGHT": ["DRAGON"],
     "TWW": ["TWW"],
-    "MID": ["MID"],
+    "MIDNIGHT": ["MID"],
+}
+
+# Factions and their identifying keywords inside the script filenames.
+# Matches body sections (substring "ALLIANCE"/"HORDE"), POI infixes ("_A_"/"_H_"),
+# and Includes path prefixes ("\A_"/"\H_" — the backslash anchors on the Windows
+# path separator so fragments like "CATA_" or "MOPA_" cannot false-match).
+FACTIONS = {
+    "ALLIANCE": ["ALLIANCE", "_A_", "\\A_"],
+    "HORDE":    ["HORDE",    "_H_", "\\H_"],
 }
 
 
@@ -65,7 +74,7 @@ class ZygorLoaderApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("ZygorGuideLoader by Nexus")
-        self.geometry("540x880")  # Expanded to fit the new expansions grid beautifully
+        self.geometry("540x870")  # Sized to fit expansions + faction row + categories snugly
         self.resizable(False, False)
 
         icon_path = resource_path("favicon.ico")
@@ -80,24 +89,26 @@ class ZygorLoaderApp(ctk.CTk):
         self.target_xml = ""
         self.toggles = {}
         self.exp_toggles = {}
+        self.faction_toggles = {}
         self.saved_toggles = {}
         self.saved_exp_toggles = {}
+        self.saved_faction_toggles = {}
 
         # --- UI LAYOUT ---
         self.lbl_title = ctk.CTkLabel(
             self, text="Zygor Guide Loader", font=("Arial", 24, "bold")
         )
-        self.lbl_title.pack(pady=(20, 10))
+        self.lbl_title.pack(pady=(12, 6))
 
         self.btn_browse = ctk.CTkButton(
             self, text="Select World of Warcraft Folder", command=self.browse_folder
         )
-        self.btn_browse.pack(pady=5)
+        self.btn_browse.pack(pady=(3, 2))
 
         self.lbl_path = ctk.CTkLabel(
             self, text="Detecting WoW...", text_color="gray", font=("Arial", 10)
         )
-        self.lbl_path.pack(pady=5)
+        self.lbl_path.pack(pady=2)
 
         # --- CONTAINER FOR MAIN UI ---
         self.main_ui = ctk.CTkFrame(self, fg_color="transparent")
@@ -108,11 +119,23 @@ class ZygorLoaderApp(ctk.CTk):
             text="--- EXPANSIONS ---",
             font=("Arial", 14, "bold"),
             text_color="#17a2b8",
-        ).pack(pady=(5, 5))
+        ).pack(pady=(4, 2))
 
         self.frame_expansions = ctk.CTkFrame(self.main_ui, fg_color="transparent")
         self.frame_expansions.pack(pady=0, padx=20, fill="x")
         self.frame_expansions.grid_columnconfigure((0, 1, 2), weight=1)
+
+        # --- FACTIONS ROW ---
+        ctk.CTkLabel(
+            self.main_ui,
+            text="--- FACTIONS ---",
+            font=("Arial", 14, "bold"),
+            text_color="#ffc107",
+        ).pack(pady=(6, 2))
+
+        self.frame_factions = ctk.CTkFrame(self.main_ui, fg_color="transparent")
+        self.frame_factions.pack(pady=0, padx=20, fill="x")
+        self.frame_factions.grid_columnconfigure((0, 1), weight=1)
 
         # --- GUIDE CATEGORIES ---
         ctk.CTkLabel(
@@ -120,17 +143,17 @@ class ZygorLoaderApp(ctk.CTk):
             text="--- GUIDE CATEGORIES ---",
             font=("Arial", 14, "bold"),
             text_color="#28a745",
-        ).pack(pady=(15, 5))
+        ).pack(pady=(8, 2))
 
         # --- SCROLLABLE CATEGORY LIST ---
         self.scrollable_frame = ctk.CTkScrollableFrame(
             self.main_ui, width=400, height=300, fg_color="transparent"
         )
-        self.scrollable_frame.pack(pady=5, padx=20, fill="both", expand=True)
+        self.scrollable_frame.pack(pady=2, padx=20, fill="both", expand=True)
 
         # --- CENTERED TOGGLE ALL BUTTONS ---
         self.frame_toggle_container = ctk.CTkFrame(self.main_ui, fg_color="transparent")
-        self.frame_toggle_container.pack(pady=10, fill="x")
+        self.frame_toggle_container.pack(pady=6, fill="x")
 
         self.inner_toggle_btns = ctk.CTkFrame(
             self.frame_toggle_container, fg_color="transparent"
@@ -163,7 +186,7 @@ class ZygorLoaderApp(ctk.CTk):
 
         # --- ACTION BUTTONS FRAME ---
         self.frame_actions = ctk.CTkFrame(self.main_ui, fg_color="transparent")
-        self.frame_actions.pack(pady=(5, 10))
+        self.frame_actions.pack(pady=(3, 6))
 
         self.btn_patch = ctk.CTkButton(
             self.frame_actions,
@@ -198,7 +221,7 @@ class ZygorLoaderApp(ctk.CTk):
             font=("Arial", 14, "bold"),
             height=35,
         )
-        self.btn_cache.pack(pady=(0, 20))
+        self.btn_cache.pack(pady=(0, 10))
 
         # Initialization
         self.load_config()
@@ -238,6 +261,7 @@ class ZygorLoaderApp(ctk.CTk):
     def load_config(self):
         self.saved_toggles = {}
         self.saved_exp_toggles = {}
+        self.saved_faction_toggles = {"ALLIANCE": True, "HORDE": True}
         if os.path.exists(CONFIG_FILE):
             try:
                 with open(CONFIG_FILE, "r") as f:
@@ -249,6 +273,10 @@ class ZygorLoaderApp(ctk.CTk):
                         self.zygor_path = saved_path
                         self.saved_toggles = data.get("toggles", {})
                         self.saved_exp_toggles = data.get("exp_toggles", {})
+                        # Back-compat: existing configs lack faction_toggles; default both ON.
+                        self.saved_faction_toggles = data.get(
+                            "faction_toggles", {"ALLIANCE": True, "HORDE": True}
+                        )
                         self.setup_files()
             except Exception as e:
                 print(f"Config load error: {e}")
@@ -260,6 +288,9 @@ class ZygorLoaderApp(ctk.CTk):
                 "toggles": {cat: var.get() for cat, var in self.toggles.items()},
                 "exp_toggles": {
                     exp: var.get() for exp, var in self.exp_toggles.items()
+                },
+                "faction_toggles": {
+                    fac: var.get() for fac, var in self.faction_toggles.items()
                 },
             }
             with open(CONFIG_FILE, "w") as f:
@@ -314,6 +345,7 @@ class ZygorLoaderApp(ctk.CTk):
     def load_categories(self):
         self.toggles.clear()
         self.exp_toggles.clear()
+        self.faction_toggles.clear()
 
         # Build UI Switches for Expansions Grid
         for widget in self.frame_expansions.winfo_children():
@@ -327,8 +359,23 @@ class ZygorLoaderApp(ctk.CTk):
             switch = ctk.CTkSwitch(
                 self.frame_expansions, text=exp, variable=var, font=("Arial", 12)
             )
-            switch.grid(row=row, column=col, padx=5, pady=5, sticky="w")
+            switch.grid(row=row, column=col, padx=5, pady=2, sticky="w")
             self.exp_toggles[exp] = var
+
+        # Build UI Switches for Factions Row
+        for widget in self.frame_factions.winfo_children():
+            widget.destroy()
+
+        fac_keys = list(FACTIONS.keys())
+        for i, fac in enumerate(fac_keys):
+            # Default-ON when key missing keeps existing users' behaviour unchanged.
+            is_on = self.saved_faction_toggles.get(fac, True)
+            var = ctk.BooleanVar(value=is_on)
+            switch = ctk.CTkSwitch(
+                self.frame_factions, text=fac, variable=var, font=("Arial", 12)
+            )
+            switch.grid(row=0, column=i, padx=5, pady=2, sticky="w")
+            self.faction_toggles[fac] = var
 
         # Build UI Switches for Guide Categories
         for widget in self.scrollable_frame.winfo_children():
@@ -340,7 +387,7 @@ class ZygorLoaderApp(ctk.CTk):
             switch = ctk.CTkSwitch(
                 self.scrollable_frame, text=cat, variable=var, font=("Arial", 14)
             )
-            switch.pack(pady=5, padx=20, anchor="w")
+            switch.pack(pady=3, padx=20, anchor="w")
             self.toggles[cat] = var
 
     def patch_xml(self):
@@ -415,8 +462,24 @@ class ZygorLoaderApp(ctk.CTk):
                         self.exp_toggles[exp].get() for exp in matched_expansions
                     )
 
-                # Final state requires both to be true (or if it's a general/base file without an expansion string, it just checks category)
-                is_enabled = category_enabled and expansion_enabled
+                # 3. FACTION ENABLEMENT
+                # Applies to ALL Script lines including Includes (Option-A: the
+                # wrong-faction Includes still parse before Zygor's runtime guard
+                # short-circuits them, so XML-level filtering saves real cost).
+                # Files with no faction keyword (Common*, N_*, _Common_) pass through.
+                faction_enabled = True
+                matched_factions = []
+                for fac, keywords in FACTIONS.items():
+                    if any(kw in line_upper for kw in keywords):
+                        matched_factions.append(fac)
+                if matched_factions:
+                    faction_enabled = any(
+                        self.faction_toggles[f].get() for f in matched_factions
+                    )
+
+                # Final state requires all three to be true (or, for files with no
+                # expansion/faction keywords, the missing checks default to True).
+                is_enabled = category_enabled and expansion_enabled and faction_enabled
 
                 # Capture exact leading whitespace to preserve original formatting
                 leading_ws = line[: len(line) - len(line.lstrip())]
@@ -499,6 +562,8 @@ class ZygorLoaderApp(ctk.CTk):
             var.set(state)
         for var in self.exp_toggles.values():
             var.set(state)
+        for var in self.faction_toggles.values():
+            var.set(state)
 
     def restore_official_backups(self):
         if not os.path.exists(self.official_xml):
@@ -516,6 +581,8 @@ class ZygorLoaderApp(ctk.CTk):
                 for var in self.toggles.values():
                     var.set(True)
                 for var in self.exp_toggles.values():
+                    var.set(True)
+                for var in self.faction_toggles.values():
                     var.set(True)
                 self.save_config()
                 messagebox.showinfo("Success", "Zygor restored to original state.")
