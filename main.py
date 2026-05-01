@@ -234,6 +234,17 @@ class ZygorLoaderApp(ctk.CTk):
             )
             self.after(200, self.browse_folder)
 
+        # Persist toggle state when the user closes the window without
+        # clicking Patch / Restore (those paths already call save_config).
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    def _on_close(self):
+        # Only save when we have a configured path; otherwise the toggle dicts
+        # are empty / unbuilt and we'd write incomplete state over the config.
+        if self.zygor_path:
+            self.save_config()
+        self.destroy()
+
     def auto_detect_wow(self):
         try:
             key = winreg.OpenKey(
